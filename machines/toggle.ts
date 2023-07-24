@@ -1,17 +1,23 @@
-import { ActorRefFrom, createMachine, spawn } from "xstate";
+import { ActorRefFrom, createMachine } from "xstate";
 
 export type ToggleMachineActor = ActorRefFrom<typeof toggleMachine>;
 
-function toggleMachine({ initial }: { initial: string }) {
-  return createMachine({
+export const toggleMachine = createMachine(
+  {
     id: "toggleMachine",
-    predictableActionArguments: true,
-    schema: {
+    initial: "initializing",
+    types: {
+      typegen: {} as import("./toggle.typegen").Typegen0,
       events: {} as { type: "TOGGLE" },
+      context: {} as { isInitiallyChecked: boolean },
     },
-    tsTypes: {} as import("./toggle.typegen").Typegen0,
-    initial,
+    context: ({ input }) => {
+      return { ...input };
+    },
     states: {
+      initializing: {
+        always: [{ guard: "isChecked", target: "on" }, { target: "off" }],
+      },
       off: {
         on: {
           TOGGLE: {
@@ -27,17 +33,12 @@ function toggleMachine({ initial }: { initial: string }) {
         },
       },
     },
-  });
-}
-
-export function toggleMachineCreate({ initial = "off" }): {
-  machine: ReturnType<typeof toggleMachine>;
-  spawn: () => ToggleMachineActor;
-} {
-  const machine = toggleMachine({ initial });
-
-  return {
-    machine,
-    spawn: () => spawn(machine, { name: "toggleMachine" }),
-  };
-}
+  },
+  {
+    guards: {
+      isChecked({ context }) {
+        return context.isInitiallyChecked;
+      },
+    },
+  }
+);

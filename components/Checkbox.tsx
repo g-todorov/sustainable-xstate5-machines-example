@@ -1,5 +1,6 @@
-import { useMachine } from "@xstate/react";
-import { toggleMachineCreate } from "../machines/toggle";
+import { useActor, useMachine, useActorRef } from "@xstate/react";
+import { createMachine } from "xstate";
+import { toggleMachine } from "../machines/toggle";
 
 interface Props {
   onChange(checked: boolean): void;
@@ -7,9 +8,9 @@ interface Props {
 }
 
 export function Checkbox({ onChange, initial = "on" }: Props) {
-  const [state, send] = useMachine(
-    () => toggleMachineCreate({ initial }).machine
-  );
+  const [state, send] = useActor(toggleMachine, {
+    input: { isInitiallyChecked: true },
+  });
 
   return (
     <>

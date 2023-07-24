@@ -1,4 +1,4 @@
-import { useActor } from "@xstate/react";
+import { useSelector } from "@xstate/react";
 import { ToggleMachineActor } from "../machines/toggle";
 
 interface Props {
@@ -7,16 +7,18 @@ interface Props {
 }
 
 export function Notification({ actor, data }: Props) {
-  const [state, send] = useActor(actor);
+  const actorState = useSelector(actor, (snapshot) => {
+    return snapshot;
+  });
 
   return (
     <div>
-      {state.matches("on") && (
+      {actorState.matches("on") && (
         <div>
           {`Very important notification`}
           {data.map((item) => {
             return (
-              <div>
+              <div key={item.title}>
                 <span>title: </span>
                 <span>{item.title}</span>
               </div>
@@ -26,27 +28,10 @@ export function Notification({ actor, data }: Props) {
       )}
       <button
         onClick={() => {
-          send({ type: "TOGGLE" });
+          actor.send({ type: "TOGGLE" });
         }}
       >
-        {state.matches("on") ? "close" : "open"}
-      </button>
-    </div>
-  );
-}
-
-export function Notification1({ actor, data }: Props) {
-  const [state, send] = useActor(actor);
-
-  return (
-    <div>
-      {state.matches("on") && <div>Very important notification</div>}
-      <button
-        onClick={() => {
-          send({ type: "TOGGLE" });
-        }}
-      >
-        {state.matches("on") ? "close" : "open"}
+        {actorState.matches("on") ? "close" : "open"}
       </button>
     </div>
   );
